@@ -50,7 +50,7 @@ impl FromStr for Contents {
 }
 
 fn main() {
-    let filename = "/home/bbyrne/projects/advent_of_code_rust/day_4/resources/test_input.txt";
+    let filename = "/home/bbyrne/projects/advent_of_code_rust/resources/day_4.txt";
 
     let Contents { numbers, boards } = match read_to_string(filename) {
         Ok(string) => Contents::from_str(&string).unwrap(),

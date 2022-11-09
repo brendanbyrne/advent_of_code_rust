@@ -1,2 +1,7 @@
-[workspace]
-members = ["day_1", "day_2", "day_3", "day_4"]
+[package]
+name = "advent_of_code_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+itertools = "0.10.5"
