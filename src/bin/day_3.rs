@@ -108,7 +108,7 @@ fn find_gamma_and_epsilon(report: &Vec<String>, bit_depth: usize) -> (i32, i32) 
 }
 
 fn main() {
-    let filename = "/home/bbyrne/projects/advent_of_code_rust/resources/day_3.txt";
+    let filename = "resources/day_3.txt";
 
     let mut f = File::open(filename).expect("File not found: {filename}");
 

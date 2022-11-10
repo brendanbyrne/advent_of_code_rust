@@ -101,7 +101,7 @@ fn score_board(board: &[[i32; 5]; 5], state: &[[bool; 5]; 5]) -> i32 {
 }
 
 fn main() {
-    let filename = "/home/bbyrne/projects/advent_of_code_rust/resources/day_4.txt";
+    let filename = "resources/day_4.txt";
 
     let Contents {
         numbers,

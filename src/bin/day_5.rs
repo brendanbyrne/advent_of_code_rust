@@ -1,12 +1,12 @@
-use std::cmp::{max, min};
+use std::cmp::max;
 use std::fs::read_to_string;
+use std::iter::IntoIterator;
 use std::str::FromStr;
 
 struct Diagram {
     height: Vec<Vec<usize>>,
 }
 
-#[derive(Default)]
 struct Point {
     x: usize,
     y: usize,
@@ -15,6 +15,41 @@ struct Point {
 struct Line {
     start: Point,
     end: Point,
+}
+
+fn increment(curr: &mut usize, target: &usize) -> bool {
+    if *curr > *target {
+        *curr -= 1;
+        return true;
+    } else if *curr < *target {
+        *curr += 1;
+        return true;
+    }
+
+    false
+}
+
+impl IntoIterator for Line {
+    type Item = (usize, usize);
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let mut points = Vec::<(usize, usize)>::new();
+
+        let mut x = self.start.x;
+        let mut y = self.start.y;
+
+        let mut x_can_move = true;
+        let mut y_can_move = true;
+        while x_can_move || y_can_move {
+            points.push((x, y));
+
+            x_can_move = increment(&mut x, &self.end.x);
+            y_can_move = increment(&mut y, &self.end.y);
+        }
+
+        points.into_iter()
+    }
 }
 
 impl FromStr for Point {
@@ -35,32 +70,15 @@ impl FromStr for Line {
     type Err = std::io::Error;
 
     fn from_str(s: &str) -> Result<Line, Self::Err> {
-        let mut line = Line {
-            start: Default::default(),
-            end: Default::default(),
-        };
-
         let mut iter = s.split(" -> ");
-        line.start = Point::from_str(iter.next().unwrap()).unwrap();
-        line.end = Point::from_str(iter.next().unwrap()).unwrap();
+
+        let line = Line {
+            start: Point::from_str(iter.next().unwrap()).unwrap(),
+            end: Point::from_str(iter.next().unwrap()).unwrap(),
+        };
 
         Ok(line)
     }
-}
-
-fn draw_line<I, J>(height: &mut Vec<Vec<usize>>, x_coords: I, y_coords: J)
-where
-    I: Iterator<Item = usize>,
-    J: Iterator<Item = usize>,
-{
-    for (x, y) in x_coords.zip(y_coords) {
-        // println!("Add height to ({x},{y})");
-        height[y][x] += 1;
-    }
-}
-
-fn align_range(i: usize, j: usize) -> std::ops::Range<usize> {
-    min(i, j)..max(i, j) + 1 // +1 because it's inclusive to the range
 }
 
 impl FromStr for Diagram {
@@ -83,18 +101,8 @@ impl FromStr for Diagram {
         let mut height = vec![vec![0; max_point.x + 1]; max_point.y + 1];
 
         for line in lines {
-            if line.start.x == line.end.x {
-                // draw vertical line
-                let x_coords = std::iter::repeat(line.start.x);
-                let y_coords = align_range(line.start.y, line.end.y);
-
-                draw_line(&mut height, x_coords, y_coords);
-            } else if line.start.y == line.end.y {
-                // draw horizontal line
-                let x_coords = align_range(line.start.x, line.end.x);
-                let y_coords = std::iter::repeat(line.start.y);
-
-                draw_line(&mut height, x_coords, y_coords);
+            for (x, y) in line {
+                height[y][x] += 1;
             }
         }
 
@@ -104,6 +112,7 @@ impl FromStr for Diagram {
 
 fn main() {
     let filename = "resources/day_5.txt";
+
     let Diagram { height } = match read_to_string(filename) {
         Ok(string) => Diagram::from_str(&string).unwrap(),
         _ => return,

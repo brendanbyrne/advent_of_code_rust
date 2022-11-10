@@ -30,7 +30,7 @@ impl FromStr for Direction {
 }
 
 fn main() {
-    let filename = "/home/bbyrne/projects/advent_of_code_rust/resources/day_2.txt";
+    let filename = "resources/day_2.txt";
 
     let mut f = File::open(filename).expect("File not found: {filename}");
 
