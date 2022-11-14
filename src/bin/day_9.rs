@@ -50,8 +50,6 @@ fn find_basins(height: &Vec<Vec<i32>>) -> Vec<(usize, usize)> {
         padded
     };
 
-    
-
     {
         let mut basin_loc = Vec::<(usize, usize)>::new();
 
@@ -151,14 +149,11 @@ fn find_valleys(height: &Vec<Vec<i32>>, basins: Vec<(usize, usize)>) -> usize {
         valleys.push(size);
     }
     valleys.sort_unstable();
-    valleys[valleys.len() - 3..]
-        .iter()
-        .product()
+    valleys[valleys.len() - 3..].iter().product()
 }
 
 fn main() {
     let filename = "resources/day_9.txt";
-    // let filename = "/home/bbyrne/tmp/test.txt";
 
     let Height { height } = Height::from(read_to_string(filename).unwrap());
 
