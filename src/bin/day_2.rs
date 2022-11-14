@@ -21,10 +21,10 @@ impl FromStr for Direction {
     type Err = ParseCommandError;
     fn from_str(string: &str) -> Result<Self, Self::Err> {
         match string {
-            "up" => return Ok(Direction::Up),
-            "down" => return Ok(Direction::Down),
-            "forward" => return Ok(Direction::Forward),
-            _ => return Err(ParseCommandError {}),
+            "up" => Ok(Direction::Up),
+            "down" => Ok(Direction::Down),
+            "forward" => Ok(Direction::Forward),
+            _ => Err(ParseCommandError {}),
         }
     }
 }
@@ -40,7 +40,7 @@ fn main() {
 
     let mut commands = Vec::<Command>::new();
     for c in contents.lines() {
-        let mut it = c.split(" ");
+        let mut it = c.split(' ');
         commands.push(Command {
             direction: it.next().unwrap().parse::<Direction>().unwrap(),
             value: it.next().unwrap().parse::<i32>().unwrap(),

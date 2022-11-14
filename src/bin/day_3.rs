@@ -29,10 +29,7 @@ fn find_oxygen(mut report: Vec<String>, bit_depth: usize) -> i32 {
             cmp = '1';
         }
 
-        report = report
-            .into_iter()
-            .filter(|s| s.chars().nth(bit) == Some(cmp))
-            .collect();
+        report.retain(|s| s.chars().nth(bit) == Some(cmp));
 
         bit += 1
     }
@@ -59,10 +56,7 @@ fn find_co2(mut report: Vec<String>, bit_depth: usize) -> i32 {
             cmp = '0';
         }
 
-        report = report
-            .into_iter()
-            .filter(|s| s.chars().nth(bit) == Some(cmp))
-            .collect();
+        report.retain(|s| s.chars().nth(bit) == Some(cmp));
 
         bit += 1
     }

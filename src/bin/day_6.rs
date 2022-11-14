@@ -16,7 +16,7 @@ fn main() {
 
     let data: Vec<u64> = match read_to_string(filename) {
         Ok(string) => string
-            .split(",")
+            .split(',')
             .map(|s| s.trim().parse::<u64>().unwrap())
             .collect::<Vec<u64>>(),
         _ => return,

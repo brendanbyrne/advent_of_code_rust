@@ -9,15 +9,15 @@ fn main() {
 
     let data = match read_to_string(filename) {
         Ok(string) => string
-            .split(",")
+            .split(',')
             .map(|s| s.trim().parse::<usize>().unwrap())
             .collect::<Vec<usize>>(),
         _ => return,
     };
 
-    let mut bins = vec![0 as u64; (data.iter().max().unwrap() + 1) as usize];
+    let mut bins = vec![0_u64; (data.iter().max().unwrap() + 1) as usize];
     let cost = {
-        let mut v = vec![0 as usize; (data.iter().max().unwrap() + 1) as usize];
+        let mut v = vec![0_usize; (data.iter().max().unwrap() + 1) as usize];
         for i in 1..v.len() {
             v[i] = i + v[i - 1];
         }

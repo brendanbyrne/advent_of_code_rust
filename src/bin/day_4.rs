@@ -46,8 +46,8 @@ impl FromStr for Contents {
                 contents
                     .locations
                     .entry(v)
-                    .or_insert(vec![])
-                    .push(Index { b: b, i: 0, j: j });
+                    .or_default()
+                    .push(Index { b, i: 0, j });
                 board[0][j] = v;
             }
 
@@ -59,8 +59,8 @@ impl FromStr for Contents {
                     contents
                         .locations
                         .entry(v)
-                        .or_insert(vec![])
-                        .push(Index { b: b, i: i, j: j });
+                        .or_default()
+                        .push(Index { b, i, j });
                     board[i][j] = v;
                 }
             }
@@ -85,7 +85,7 @@ fn check_move(state: &[[bool; 5]; 5], i_pos: &usize, j_pos: &usize) -> bool {
         }
     }
 
-    return true;
+    true
 }
 
 fn score_board(board: &[[i32; 5]; 5], state: &[[bool; 5]; 5]) -> i32 {

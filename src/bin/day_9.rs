@@ -35,7 +35,7 @@ fn print<T: std::fmt::Display>(padded: &Vec<Vec<T>>) {
         for v in row {
             print!("{v}");
         }
-        print!("\n");
+        println!();
     }
 }
 
@@ -50,21 +50,23 @@ fn find_basins(height: &Vec<Vec<i32>>) -> Vec<(usize, usize)> {
         padded
     };
 
-    let basin_loc = {
+    
+
+    {
         let mut basin_loc = Vec::<(usize, usize)>::new();
 
         for i in 1..(height.len() + 1) {
             for j in 1..(height[1].len() + 1) {
                 let mut is_basin = true;
                 for (oi, oj) in [
-                    (-1 as i32, -1 as i32),
-                    (-1 as i32, 0 as i32),
-                    (-1 as i32, 1 as i32),
-                    (0 as i32, -1 as i32),
-                    (0 as i32, 1 as i32),
-                    (1 as i32, -1 as i32),
-                    (1 as i32, 0 as i32),
-                    (1 as i32, 1 as i32),
+                    (-1_i32, -1_i32),
+                    (-1_i32, 0_i32),
+                    (-1_i32, 1_i32),
+                    (0_i32, -1_i32),
+                    (0_i32, 1_i32),
+                    (1_i32, -1_i32),
+                    (1_i32, 0_i32),
+                    (1_i32, 1_i32),
                 ] {
                     let ki = i as i32 + oi;
                     let kj = j as i32 + oj;
@@ -78,9 +80,7 @@ fn find_basins(height: &Vec<Vec<i32>>) -> Vec<(usize, usize)> {
         }
 
         basin_loc
-    };
-
-    basin_loc
+    }
 }
 
 #[derive(Clone)]
@@ -92,7 +92,7 @@ enum Status {
 }
 
 fn find_valleys(height: &Vec<Vec<i32>>, basins: Vec<(usize, usize)>) -> usize {
-    let mut padded = {
+    let padded = {
         let mut padded = vec![vec![9; height[0].len() + 2]; height.len() + 2];
         for i in 1..(height.len() + 1) {
             for j in 1..(height[1].len() + 1) {
@@ -131,10 +131,10 @@ fn find_valleys(height: &Vec<Vec<i32>>, basins: Vec<(usize, usize)>) -> usize {
             }
 
             for (oi, oj) in [
-                (-1 as i32, 0 as i32),
-                (1 as i32, 0 as i32),
-                (0 as i32, -1 as i32),
-                (0 as i32, 1 as i32),
+                (-1_i32, 0_i32),
+                (1_i32, 0_i32),
+                (0_i32, -1_i32),
+                (0_i32, 1_i32),
             ] {
                 let ki = (i as i32 + oi) as usize;
                 let kj = (j as i32 + oj) as usize;
@@ -152,8 +152,8 @@ fn find_valleys(height: &Vec<Vec<i32>>, basins: Vec<(usize, usize)>) -> usize {
     }
     valleys.sort_unstable();
     valleys[valleys.len() - 3..]
-        .into_iter()
-        .fold(1, |acc, x| acc * x)
+        .iter()
+        .product()
 }
 
 fn main() {
