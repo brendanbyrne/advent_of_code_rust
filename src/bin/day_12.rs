@@ -74,7 +74,7 @@ struct Path {
     path: Vec<usize>,
     visited: HashSet<usize>,
     done: bool,
-    has_dup: bool,
+    can_dup: bool,
 }
 
 impl Path {
@@ -83,7 +83,7 @@ impl Path {
             path: Vec::new(),
             visited: HashSet::new(),
             done: false,
-            has_dup: false,
+            can_dup: true, // has opportunity to duplicate
         }
     }
 }
@@ -171,8 +171,6 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
         paths.push(path);
     }
 
-    // replace keep_going with?
-    //   while any !path.done
     while keep_going {
         keep_going = false;
 
@@ -183,7 +181,7 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
 
             keep_going = true;
 
-            pprint(&paths[i_p], &nodes);
+            // pprint(&paths[i_p], &nodes);
 
             let i_curr = paths[i_p].path.last().unwrap().clone();
 
@@ -195,38 +193,48 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
                 paths[i_p].visited.insert(i_curr);
             }
 
-            // decide on next location
-            let next_i: Vec<usize> = nodes[i_curr]
-                .connections
-                .clone()
-                .into_iter()
-                .filter(|i| !paths[i_p].visited.contains(i))
-                .collect();
+            // Generate potential next locations
+            // Paired with what the value of can_dup will be after moving there
+            let next_i_d = {
+                let mut next_i_d: Vec<(usize, bool)> = Vec::new();
 
-            let s = next_i
-                .iter()
-                .map(|i| nodes[*i].name.clone())
-                .collect::<Vec<String>>()
-                .join(", ");
-            println!("Pontential: {s}");
+                for next_i in nodes[i_curr].connections.clone() {
+                    if nodes[next_i].is_start {
+                        continue;
+                    } else if !paths[i_p].visited.contains(&next_i) {
+                        next_i_d.push((next_i, paths[i_p].can_dup));
+                    } else if paths[i_p].visited.contains(&next_i) && paths[i_p].can_dup {
+                        // consumes the can_dup ability
+                        next_i_d.push((next_i, false));
+                    }
+                }
+                next_i_d
+            };
+
+            // let s = next_i_d
+            //     .iter()
+            //     .map(|(i, d)| format!("({}, {})", nodes[*i].name.clone(), d))
+            //     .collect::<Vec<String>>()
+            //     .join(", ");
+            // println!("Pontential: {s}");
 
             // No where to go, branch is done
-            if next_i.is_empty() {
+            if next_i_d.is_empty() {
                 paths[i_p].done = true;
                 continue;
             }
 
             // Add divergent paths
-            if next_i.len() > 1 {
-                for i_n in &next_i[1..] {
-                    println!("Creating path to: {}", nodes[*i_n].name);
+            if next_i_d.len() > 1 {
+                for (i_next, can_dup) in &next_i_d[1..] {
                     paths.push(paths[i_p].clone());
-                    paths.last_mut().unwrap().path.push(*i_n);
+                    paths.last_mut().unwrap().path.push(*i_next);
+                    paths.last_mut().unwrap().can_dup = *can_dup;
                 }
             }
-
-            println!("Creating path to: {}", nodes[next_i[0]].name);
-            paths[i_p].path.push(next_i[0]);
+            let (i_next, can_dup) = next_i_d[0];
+            paths[i_p].path.push(i_next);
+            paths[i_p].can_dup = can_dup;
         }
     }
 
@@ -239,17 +247,17 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
 }
 
 fn main() {
-    // let filename = "resources/day_12.txt";
-    let filename = "/home/bbyrne/tmp/test.txt";
+    let filename = "resources/day_12.txt";
+    // let filename = "/home/bbyrne/tmp/test.txt";
 
     let (nodes, i_start, i_end) = load(filename);
 
     let paths = all_paths(&nodes, i_start, i_end);
-    for p in &paths {
-        for i_n in p.path.clone() {
-            print!("{} ", nodes[i_n].name);
-        }
-        print!("\n");
-    }
+    // for p in &paths {
+    //     for i_n in p.path.clone() {
+    //         print!("{} ", nodes[i_n].name);
+    //     }
+    //     print!("\n");
+    // }
     println!("Number of paths {}", paths.len());
 }
