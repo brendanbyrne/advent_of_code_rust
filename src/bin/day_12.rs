@@ -1,4 +1,3 @@
-use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::collections::{HashMap, HashSet};
 use std::fs::read_to_string;
 
@@ -53,110 +52,25 @@ fn load<P: AsRef<std::path::Path>>(path: P) -> (Vec<Node>, usize, usize) {
             .insert(*name_to_i.get(&names[0]).unwrap());
     }
 
-    nodes[name_to_i["start"]].is_start = true;
-
     (nodes, name_to_i["start"], name_to_i["end"])
-}
-
-fn print(nodes: &Vec<Node>) {
-    for n in nodes {
-        println!("{}", n.name);
-        println!("  is large: {}", n.is_large);
-        println!("  idx: {}", n.idx);
-        for i in &n.connections {
-            println!("  - {}", nodes[*i].name);
-        }
-    }
 }
 
 #[derive(Clone)]
 struct Path {
-    path: Vec<usize>,
+    i_next: usize,
     visited: HashSet<usize>,
     done: bool,
     can_dup: bool,
 }
 
 impl Path {
-    fn new() -> Path {
+    fn new(i_next: usize) -> Path {
         Path {
-            path: Vec::new(),
+            i_next,
             visited: HashSet::new(),
             done: false,
             can_dup: true, // has opportunity to duplicate
         }
-    }
-}
-
-fn pprint(p: &Path, nodes: &Vec<Node>) {
-    let path_str = p
-        .path
-        .iter()
-        .map(|i| nodes[*i].name.clone())
-        .collect::<Vec<String>>()
-        .join("->");
-    let visited = p
-        .visited
-        .iter()
-        .map(|i| nodes[*i].name.clone())
-        .collect::<Vec<String>>()
-        .join(" ");
-    println!("Path: {path_str}\n    Visited: {visited}");
-}
-
-impl PartialEq for Path {
-    fn eq(&self, other: &Self) -> bool {
-        let lhs_name = self
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        let rhs_name = other
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        lhs_name == rhs_name
-    }
-}
-
-impl Eq for Path {}
-
-impl PartialOrd for Path {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let lhs_name = self
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        let rhs_name = other
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        Some(lhs_name.cmp(&rhs_name))
-    }
-}
-
-impl Ord for Path {
-    fn cmp(&self, other: &Self) -> Ordering {
-        let lhs_name = self
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        let rhs_name = other
-            .path
-            .iter()
-            .map(|i| i.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-        lhs_name.cmp(&rhs_name)
     }
 }
 
@@ -165,11 +79,7 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
 
     let mut keep_going = true;
 
-    {
-        let mut path = Path::new();
-        path.path.push(i_start);
-        paths.push(path);
-    }
+    paths.push(Path::new(i_start));
 
     while keep_going {
         keep_going = false;
@@ -181,9 +91,7 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
 
             keep_going = true;
 
-            // pprint(&paths[i_p], &nodes);
-
-            let i_curr = paths[i_p].path.last().unwrap().clone();
+            let i_curr = paths[i_p].i_next;
 
             // Update state for current location
             if i_curr == i_end {
@@ -211,13 +119,6 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
                 next_i_d
             };
 
-            // let s = next_i_d
-            //     .iter()
-            //     .map(|(i, d)| format!("({}, {})", nodes[*i].name.clone(), d))
-            //     .collect::<Vec<String>>()
-            //     .join(", ");
-            // println!("Pontential: {s}");
-
             // No where to go, branch is done
             if next_i_d.is_empty() {
                 paths[i_p].done = true;
@@ -228,36 +129,26 @@ fn all_paths(nodes: &Vec<Node>, i_start: usize, i_end: usize) -> Vec<Path> {
             if next_i_d.len() > 1 {
                 for (i_next, can_dup) in &next_i_d[1..] {
                     paths.push(paths[i_p].clone());
-                    paths.last_mut().unwrap().path.push(*i_next);
+                    paths.last_mut().unwrap().i_next = *i_next;
                     paths.last_mut().unwrap().can_dup = *can_dup;
                 }
             }
             let (i_next, can_dup) = next_i_d[0];
-            paths[i_p].path.push(i_next);
+            paths[i_p].i_next = i_next;
             paths[i_p].can_dup = can_dup;
         }
     }
 
-    paths = paths
-        .into_iter()
-        .filter(|p| *p.path.last().unwrap() == i_end)
-        .collect();
-    paths.sort();
+    paths = paths.into_iter().filter(|p| p.i_next == i_end).collect();
     paths
 }
 
 fn main() {
     let filename = "resources/day_12.txt";
-    // let filename = "/home/bbyrne/tmp/test.txt";
 
     let (nodes, i_start, i_end) = load(filename);
 
     let paths = all_paths(&nodes, i_start, i_end);
-    // for p in &paths {
-    //     for i_n in p.path.clone() {
-    //         print!("{} ", nodes[i_n].name);
-    //     }
-    //     print!("\n");
-    // }
+
     println!("Number of paths {}", paths.len());
 }
